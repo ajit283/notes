@@ -67,13 +67,14 @@ let user_profile _client _request ~access_token =
   | Ok response ->
     Hyper_helper.parse_json_body response @@ fun json ->
     let open Yojson.Basic.Util in
+
     let login = json |> member "login" |> to_string in
-    let email = json |> member "email" |> to_string in
+    (* let email = json |> member "email" |> to_string in *)
     Ok {
       Oauth.User_profile.provider = "github";
       id = login;
       name = Some login;
-      email = Some email;
+      email = Some "mail@a-mistry.com";
       email_verified = None;
       json;
     }

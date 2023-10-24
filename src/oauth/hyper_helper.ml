@@ -85,12 +85,13 @@ let parse_json data f =
   match Yojson.Basic.from_string data with
   | exception Yojson.Json_error _ ->
     (* TODO Should bodies be logged? *)
-    log.debug (fun log -> log "error parsing response json body=%s" data);
+    log.debug (fun log -> log "error parsing response json bodya=%s" data);
     Error "error parsing json response body"
   | json -> (
     try f json
-    with Yojson.Basic.Util.Type_error _ | Yojson.Safe.Util.Type_error _ ->
+    with Yojson.Basic.Util.Type_error (err, _) | Yojson.Safe.Util.Type_error (err, _) ->
       log.debug (fun log -> log "error parsing response json body=%s" data);
+      log.debug (fun log -> log "error: %s" err);
       Error "error parsing json response body")
 
 let parse_json_body response f =

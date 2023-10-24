@@ -4,7 +4,7 @@
  (name main)
  (preprocess
   (pps lwt_ppx))
- (libraries dream hyper uri dream_oidc dream-oauth))
+ (libraries dream hyper uri dream_oidc dream-oauth dream-html))
 
 (rule
  (targets main.ml)

@@ -29,6 +29,7 @@ depends: [
 ]
 pin-depends: [
   ["oidc.dev" "git+https://github.com/ulrikstrid/ocaml-oidc.git#f70d979"]
+  ["dream-encoding.dev" "git+https://github.com/andreypopp/dream-encoding.git#9e8b8ee"]
 ]
 
 build: [
