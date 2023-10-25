@@ -1,0 +1,5 @@
+(executable
+ (public_name notes)
+ (name main)
+ (libraries notes lwt lwt_ppx dream dream-html)
+ (preprocess (pps lwt_ppx)))
