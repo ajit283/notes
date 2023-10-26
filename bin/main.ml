@@ -30,6 +30,7 @@ let layout contents =
     [ head
         []
         [ title [] "Dream-html"
+        ; meta [name "viewport"; content "width=device-width, initial-scale=1"]
         ; script [ src "https://unpkg.com/htmx.org@1.9.4" ] ""
         ; script [ src "https://unpkg.com/htmx.org/dist/ext/ws.js" ] ""
         ; script [ src "https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js" ] ""
