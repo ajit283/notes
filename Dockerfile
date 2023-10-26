@@ -10,7 +10,7 @@ RUN cd ~/opam-repository && git pull origin master && opam update
 WORKDIR /home/opam
 
 # Copy the project's opam file and install dependencies
-COPY --chown=opam:opam app.opam app.opam
+COPY --chown=opam:opam notes.opam notes.opam
 RUN opam install . --deps-only
 
 # Copy the rest of the application
