@@ -131,7 +131,7 @@ let get_port () =
 
 let () =
   let routes, note = note_routes in
-  Dream.run ~tls:true ~interface:"0.0.0.0" ~port:(get_port ())
+  Dream.run ~interface:"0.0.0.0" ~port:(get_port ())
   @@ Dream.logger
   (* @@ Livereload.livereload *)
   @@ Dream.memory_sessions
