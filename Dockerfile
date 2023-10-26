@@ -11,7 +11,7 @@ WORKDIR /home/opam
 
 # Copy the project's opam file and install dependencies
 COPY --chown=opam:opam notes.opam notes.opam
-RUN opam install . --deps-only
+RUN opam install . -y --deps-only
 
 # Copy the rest of the application
 COPY --chown=opam:opam . .
