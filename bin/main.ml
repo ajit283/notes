@@ -117,9 +117,21 @@ let note_routes =
   , note )
 ;;
 
+let get_port () =
+  match Sys.getenv_opt "PORT" with
+  | Some port_string -> (
+      try int_of_string port_string
+      with Failure _ ->
+        Printf.eprintf "Warning: Invalid PORT value, defaulting to 8080.\n";
+        8080)
+  | None ->
+      Printf.eprintf
+        "Warning: PORT environment variable not set, defaulting to 8080.\n";
+      8080
+
 let () =
   let routes, note = note_routes in
-  Dream.run ~tls:true
+  Dream.run ~tls:true ~interface:"0.0.0.0" ~port:(get_port ())
   @@ Dream.logger
   (* @@ Livereload.livereload *)
   @@ Dream.memory_sessions
