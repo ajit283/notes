@@ -13,10 +13,6 @@ depends: [
   "ocaml"
   "dune" {>= "3.11"}
   "odoc" {with-doc}
-  "lwt"
-  "lwt_ppx"
-  "dream"
-  "dream-html"
 ]
 build: [
   ["dune" "subst"] {dev}

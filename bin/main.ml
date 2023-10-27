@@ -40,6 +40,17 @@ let layout contents =
         ; script [ src "https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js" ] ""
         ; script [ src "https://unpkg.com/alpinejs"; defer ] ""
         ; script [ src "https://cdn.tailwindcss.com" ] ""
+        ; script [] "
+        
+        document.addEventListener('visibilitychange', function() {
+
+        let element = document.body;
+        if(element) {
+            element.dispatchEvent(new Event('visibilitychangeevent'));
+        }
+});
+        
+        "
         ; link
             [ href
                 "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;1,100;1,200;1,300;1,400;1,500&family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
@@ -77,8 +88,8 @@ let layout contents =
              }\n"
         ]
     ; body
-        [ Hx.ext "morph"; Hx.boost true; Hx.post "/"; Hx.trigger "visibilitychange"; class_ "bg-black text-white uppercase" ]
-        [ contents ]
+        [ Hx.ext "morph"; Hx.boost true; Hx.get "/"; Hx.trigger "visibilitychangeevent"; class_ "bg-black text-white uppercase" ]
+        [ contents ]  
     ]
 ;;
 
@@ -96,7 +107,7 @@ let note_routes =
     let open Dream_html in
     let open HTML in
     form
-      [ Hx.post "/notes/edit"; Hx.trigger "keyup delay:0.5s, visibilitychange"; Hx.swap "none" ]
+      [ Hx.post "/notes/edit"; Hx.trigger "keyup delay:0.5s"; Hx.swap "none" ]
       [ txt ~raw:true "%s" (Dream.csrf_tag request)
       ; textarea
           [ name "text"
