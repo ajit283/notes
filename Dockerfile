@@ -16,6 +16,9 @@ RUN opam install . -y --deps-only
 # Copy the rest of the application
 COPY --chown=opam:opam . .
 
+RUN eval $(opam env)
+
+
 # Build the project
 RUN opam exec -- dune build @install --profile=release
 
