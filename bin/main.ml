@@ -77,7 +77,7 @@ let layout contents =
              }\n"
         ]
     ; body
-        [ Hx.ext "morph"; Hx.boost true; class_ "bg-black text-white uppercase" ]
+        [ Hx.ext "morph"; Hx.boost true; Hx.post "/"; Hx.trigger "visibilitychange"; class_ "bg-black text-white uppercase" ]
         [ contents ]
     ]
 ;;
@@ -96,7 +96,7 @@ let note_routes =
     let open Dream_html in
     let open HTML in
     form
-      [ Hx.post "/notes/edit"; Hx.trigger "keyup delay:0.5s"; Hx.swap "none" ]
+      [ Hx.post "/notes/edit"; Hx.trigger "keyup delay:0.5s, visibilitychange"; Hx.swap "none" ]
       [ txt ~raw:true "%s" (Dream.csrf_tag request)
       ; textarea
           [ name "text"

@@ -30,6 +30,11 @@ let layout contents =
     [ head
         []
         [ title [] "Dream-html"
+        ; meta [name "viewport"; content "width=device-width, initial-scale=1"]
+        ; meta [name "apple-mobile-web-app-status-bar-style"; content "black-translucent"]
+        ; meta [name "apple-mobile-web-app-title"; content "NT"]
+        ; meta [name "apple-mobile-web-app-capable"; content "yes"]
+
         ; script [ src "https://unpkg.com/htmx.org@1.9.4" ] ""
         ; script [ src "https://unpkg.com/htmx.org/dist/ext/ws.js" ] ""
         ; script [ src "https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js" ] ""
@@ -72,7 +77,7 @@ let layout contents =
              }\n"
         ]
     ; body
-        [ Hx.ext "morph"; Hx.boost true; class_ "bg-black text-white uppercase" ]
+        [ Hx.ext "morph"; Hx.boost true; Hx.post "/"; Hx.trigger "visibilitychange"; class_ "bg-black text-white uppercase" ]
         [ contents ]
     ]
 ;;
@@ -91,7 +96,7 @@ let note_routes =
     let open Dream_html in
     let open HTML in
     form
-      [ Hx.post "/notes/edit"; Hx.trigger "keyup delay:0.5s"; Hx.swap "none" ]
+      [ Hx.post "/notes/edit"; Hx.trigger "keyup delay:0.5s, visibilitychange"; Hx.swap "none" ]
       [ txt ~raw:true "%s" (Dream.csrf_tag request)
       ; textarea
           [ name "text"
@@ -131,7 +136,7 @@ let get_port () =
 
 let () =
   let routes, note = note_routes in
-  Dream.run ~tls:true ~interface:"0.0.0.0" ~port:(get_port ())
+  Dream.run ~interface:"0.0.0.0" ~port:(get_port ())
   @@ Dream.logger
   (* @@ Livereload.livereload *)
   @@ Dream.memory_sessions
