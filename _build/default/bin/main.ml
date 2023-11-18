@@ -93,8 +93,24 @@ let layout contents =
     ]
 ;;
 
+let websockets = ref []
+let _ = Random.self_init (); (* Initialize the generator *) 
+
+
 let note_routes =
   let note_text : string ref = ref "" in
+  let broadcast_update sender_id update =
+  List.iter (fun (id, ws) ->
+    if id <> sender_id then
+      (* Send the update to each connected client except the sender *)
+      Lwt.async (fun () -> Dream.send ws (update))
+  ) !websockets in
+  let rec ws_handler ws = 
+  
+  let id = Random.int 10000 in
+  websockets := (id, ws) :: !websockets;
+  Lwt.return_unit
+  in
   let note request =
     let _ =
       match !note_text with
@@ -104,9 +120,10 @@ let note_routes =
         Lwt.return_unit
       | _ -> Lwt.return_unit
     in
+    
     let open Dream_html in
     let open HTML in
-    form
+    div [Hx.ext "ws"; Hx.ws_connect "/notes/websocket"; Hx.swap "outerHTML"] [form
       [ Hx.post "/notes/edit"; Hx.trigger "keyup delay:0.5s"; Hx.swap "none" ]
       [ txt ~raw:true "%s" (Dream.csrf_tag request)
       ; textarea
@@ -116,7 +133,7 @@ let note_routes =
           ]
           "%s"
           !note_text
-      ]
+      ]]
   in
   ( Dream.scope
       "/notes"
@@ -127,8 +144,10 @@ let note_routes =
           | `Ok [ ("text", text) ] ->
             note_text := text;
             let _ = write_to_file "note.txt" !note_text in
+            let _ = broadcast_update 0 !note_text in
             note request |> Dream_html.respond
           | _ -> Dream.empty `Bad_Request)
+      ; Dream.get "/websocket" (fun _ -> Dream.websocket ws_handler);
       ]
   , note )
 ;;

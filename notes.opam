@@ -11,12 +11,8 @@ doc: "https://url/to/documentation"
 bug-reports: "https://github.com/username/reponame/issues"
 depends: [
   "ocaml"
-  "dune" {>= "3.11"}
+  "dune" {>= "3.10"}
   "odoc" {with-doc}
-  "lwt"
-  "lwt_ppx"
-  "dream"
-  "dream-html"
 ]
 build: [
   ["dune" "subst"] {dev}
