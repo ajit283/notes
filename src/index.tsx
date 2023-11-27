@@ -26,6 +26,7 @@ const changeNote = async (text: string) => {
 };
 
 const app = new Elysia()
+  .listen(process.env.PORT ?? 3000)
   .use(html())
   .use(
     tailwind({
