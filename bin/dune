@@ -1,5 +1,0 @@
-(executable
- (public_name notes)
- (name main)
- (libraries notes lwt lwt_ppx dream dream-html caqti caqti-driver-postgresql dotenv)
- (preprocess (pps lwt_ppx)))
