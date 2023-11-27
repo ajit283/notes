@@ -2,7 +2,7 @@
 FROM ocaml/opam:alpine-ocaml-5.0 as build
 
 # Install system dependencies
-RUN sudo apk add --update libev-dev openssl-dev
+RUN sudo apk add --update libev-dev openssl-dev libpcre3-dev libpq-dev
 
 # Pull the latest OPAM repository updates
 RUN cd ~/opam-repository && git pull origin master && opam update
