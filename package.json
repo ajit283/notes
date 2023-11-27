@@ -1,0 +1,22 @@
+{
+  "name": "app",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.tsx"
+  },
+  "dependencies": {
+    "@elysiajs/html": "^0.7.3",
+    "@elysiajs/static": "^0.7.1",
+    "@kitajs/html": "^3.0.10",
+    "@libsql/client": "^0.4.0-pre.2",
+    "elysia": "latest",
+    "elysia-tailwind": "1.0.7",
+    "libsql": "^0.2.0-pre.2",
+    "postgres": "^3.4.3"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
+}
