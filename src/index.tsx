@@ -115,6 +115,10 @@ const Layout = ({ children }: PropsWithChildren) => (
   <html lang="en">
     <head>
       <title>Hello World</title>
+
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
