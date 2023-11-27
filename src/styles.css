@@ -4,5 +4,5 @@
 
 @font-face {
   font-family: "BerkeleyMono";
-  src: url("/public/bmr.woff") format("woff");
+  src: url("../public/bmr.woff") format("woff");
 }
