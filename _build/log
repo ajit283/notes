@@ -1,5 +1,0 @@
-# dune build
-# OCAMLPARAM: unset
-# Shared cache: disabled
-# Workspace root: /Users/ajit/Repositories/notes
-# Auto-detected concurrency: 8

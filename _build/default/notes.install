@@ -1,8 +1,0 @@
-lib: [
-  "_build/install/default/lib/notes/META"
-  "_build/install/default/lib/notes/dune-package"
-  "_build/install/default/lib/notes/opam"
-]
-bin: [
-  "_build/install/default/bin/notes"
-]
