@@ -26,10 +26,7 @@ const changeNote = async (text: string) => {
 };
 
 const app = new Elysia()
-  .listen({
-    port: process.env.PORT ?? 3000,
-    hostname: "0.0.0.0",
-  })
+
   .use(html())
   .use(
     tailwind({
@@ -109,7 +106,10 @@ const app = new Elysia()
     return "";
   })
 
-  .listen(3000);
+  .listen({
+    port: process.env.PORT ?? 3000,
+    hostname: "0.0.0.0",
+  });
 
 const Layout = ({ children }: PropsWithChildren) => (
   <html lang="en">
