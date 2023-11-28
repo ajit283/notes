@@ -137,7 +137,7 @@ const app = new Elysia()
   });
 
 const Layout = ({ children }: PropsWithChildren) => (
-  <html lang="en">
+  <html class="bg-black" lang="en">
     <head>
       <title>Notes</title>
       <meta charset="utf-8" />
@@ -153,7 +153,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body class="overflow-x-hidden bg-black" hx-boost="true">
+    <body class="overflow-x-hidden" hx-boost="true">
       {children}
     </body>
   </html>
