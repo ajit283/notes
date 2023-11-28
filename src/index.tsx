@@ -18,11 +18,27 @@ await client.execute(
   "CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, content TEXT)"
 );
 
+let res = await client.execute("select content from notes where id = 0");
+
+let note = res.rows[0].content;
+
+let timeOut: NodeJS.Timeout | null;
+let timeOutRunning = false;
+
 const changeNote = async (text: string) => {
-  await client.execute({
-    sql: "update notes set content = ? where id = 0",
-    args: [text],
-  });
+  note = text;
+  if (timeOut) {
+    clearTimeout(timeOut);
+  }
+  timeOutRunning = true;
+  timeOut = setTimeout(async () => {
+    // console.log("sending to db", text);
+    await client.execute({
+      sql: "update notes set content = ? where id = 0",
+      args: [text],
+    });
+    timeOutRunning = false;
+  }, 1000);
 };
 
 const app = new Elysia()
@@ -38,8 +54,6 @@ const app = new Elysia()
   )
   .use(staticPlugin())
   .get("/", async () => {
-    const note = await client.execute("select content from notes where id = 0");
-
     function getCurrentDate(): string {
       const days = [
         "Sunday",
@@ -82,19 +96,27 @@ const app = new Elysia()
       return `${day}, ${ordinalDate} ${month} ${year}`;
     }
 
+    // console.log("timeout", timeOutRunning);
+
+    if (!timeOutRunning) {
+      res = await client.execute("select content from notes where id = 0");
+      note = res.rows[0].content;
+    }
+
     return (
       <Layout>
-        <div class="text-2xl font-custom  bg-black text-white flex flex-col p-3">
+        <div class="text-xl font-custom  bg-black text-white flex flex-col p-3">
           <div>{getCurrentDate()}</div>
           <div>=========================</div>
           <textarea
             spellcheck="false"
             hx-post="/edit"
-            hx-trigger="keyup changed "
+            hx-trigger="keyup changed"
+            hx-swap="none"
             name="text"
             class="bg-black text-white w-full min-h-screen border-none outline-none appearance-none focus:ring-0 focus:outline-none"
           >
-            {note.rows[0].content}
+            {note}
           </textarea>
         </div>
       </Layout>
@@ -103,7 +125,7 @@ const app = new Elysia()
   .post("/edit", async ({ body }) => {
     //@ts-ignore
     await changeNote(body.text);
-    return "";
+    return "ok";
   })
 
   .listen({
@@ -114,7 +136,7 @@ const app = new Elysia()
 const Layout = ({ children }: PropsWithChildren) => (
   <html lang="en">
     <head>
-      <title>Hello World</title>
+      <title>Notes</title>
 
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -122,7 +144,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body>{children}</body>
+    <body hx-boost="true">{children}</body>
   </html>
 );
 
