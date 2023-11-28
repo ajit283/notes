@@ -3,8 +3,11 @@ import { html } from "@elysiajs/html";
 import { PropsWithChildren } from "@kitajs/html";
 import { tailwind } from "elysia-tailwind"; // 1. Import
 import { staticPlugin } from "@elysiajs/static";
+import { ip } from "elysia-ip";
 import Database from "libsql";
 import { createClient } from "@libsql/client";
+import { EventEmitter } from "events";
+import { Stream } from "@elysiajs/stream";
 
 const url = process.env.LIBSQL_URL!!;
 const authToken = process.env.LIBSQL_TOKEN!!;
@@ -41,6 +44,8 @@ const changeNote = async (text: string) => {
   }, 5000);
 };
 
+const eventEmitter = new EventEmitter();
+
 const app = new Elysia()
 
   .use(html())
@@ -53,6 +58,7 @@ const app = new Elysia()
     })
   )
   .use(staticPlugin())
+  .use(ip())
   .get("/", async () => {
     function getCurrentDate(): string {
       const days = [
@@ -104,8 +110,11 @@ const app = new Elysia()
     return (
       <Layout>
         <div
+          hx-get="/"
+          hx-trigger="sse:message"
+          hx-swap="outerHTML"
           id="content"
-          class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3 fixed"
+          class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3"
         >
           <div>{getCurrentDate()}</div>
           <div class="w-full overflow-x-hidden">
@@ -125,19 +134,35 @@ const app = new Elysia()
       </Layout>
     );
   })
-  .post("/edit", async ({ body }) => {
+  .post("/edit", async ({ body, set }) => {
     //@ts-ignore
     await changeNote(body.text);
+    set.redirect = "/get_ip";
     return "ok";
   })
-
+  .get("/get_ip", async ({ ip }) => {
+    console.log("ip:", ip);
+    eventEmitter.emit("change", ip);
+    return "ok";
+  })
+  .get("/event_stream", ({ ip }) => {
+    console.log("/event_stream ip:", ip);
+    return new Stream((stream) => {
+      eventEmitter.on("change", async (editIp) => {
+        //@ts-ignore
+        if (editIp.address !== ip!!.address) {
+          stream.send("message");
+        }
+      });
+    });
+  })
   .listen({
     port: process.env.PORT ?? 3000,
     hostname: "0.0.0.0",
   });
 
 const Layout = ({ children }: PropsWithChildren) => (
-  <html class="bg-black overflow-hidden fixed" lang="en">
+  <html class="bg-black overflow-hidden" lang="en">
     <head>
       <title>Notes</title>
       <meta charset="utf-8" />
@@ -150,10 +175,13 @@ const Layout = ({ children }: PropsWithChildren) => (
       <meta name="apple-mobile-web-app-status-bar-style" content="black" />
       <meta name="apple-mobile-web-app-title" content="Notes" />
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
+      <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body hx-boost="true">{children}</body>
+    <body hx-boost="true" hx-ext="sse" sse-connect="/event_stream">
+      {children}
+    </body>
   </html>
 );
 
