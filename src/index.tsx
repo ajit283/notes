@@ -46,6 +46,33 @@ const changeNote = async (text: string) => {
 
 const eventEmitter = new EventEmitter();
 
+const MAX_LISTENERS = 5;
+
+// Define a type for the listener function
+type ListenerFunction = (...args: any[]) => void;
+
+// Array to keep track of listeners
+let listeners: ListenerFunction[] = [];
+
+// Function to add a listener
+function addListener(eventName: string, listenerFunction: ListenerFunction) {
+  console.log("adding event listener");
+  eventEmitter.on(eventName, listenerFunction);
+  listeners.push(listenerFunction); // Add to tracking array
+  console.log(listeners);
+  console.log(listeners.length);
+
+  // Check and remove the oldest listener if limit exceeded
+  if (listeners.length >= MAX_LISTENERS) {
+    console.log("removing");
+    const oldestListener = listeners.shift(); // Remove from tracking array
+    if (oldestListener) {
+      eventEmitter.removeListener(eventName, oldestListener); // Remove from EventEmitter
+    }
+    console.log("Removed oldest listener");
+  }
+}
+
 const app = new Elysia()
 
   .use(html())
@@ -148,12 +175,16 @@ const app = new Elysia()
   .get("/event_stream", ({ ip }) => {
     console.log("/event_stream ip:", ip);
     return new Stream((stream) => {
-      eventEmitter.on("change", async (editIp) => {
+      //@ts-ignore
+      const onChangeListener = async (editIp) => {
         //@ts-ignore
-        if (editIp.address !== ip!!.address) {
+        if (true) {
+          console.log("sending message");
           stream.send("message");
         }
-      });
+      };
+      // eventEmitter.on("change", (event, listener) => {});
+      addListener("change", onChangeListener);
     });
   })
   .listen({
