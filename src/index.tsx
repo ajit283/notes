@@ -105,7 +105,7 @@ const app = new Elysia()
       <Layout>
         <div
           id="content"
-          class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3"
+          class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3 fixed"
         >
           <div>{getCurrentDate()}</div>
           <div class="w-full overflow-x-hidden">
@@ -137,7 +137,7 @@ const app = new Elysia()
   });
 
 const Layout = ({ children }: PropsWithChildren) => (
-  <html class="bg-black" lang="en">
+  <html class="bg-black overflow-hidden fixed" lang="en">
     <head>
       <title>Notes</title>
       <meta charset="utf-8" />
@@ -153,9 +153,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body class="overflow-x-hidden" hx-boost="true">
-      {children}
-    </body>
+    <body hx-boost="true">{children}</body>
   </html>
 );
 
