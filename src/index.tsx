@@ -38,7 +38,7 @@ const changeNote = async (text: string) => {
       args: [text],
     });
     timeOutRunning = false;
-  }, 1000);
+  }, 5000);
 };
 
 const app = new Elysia()
