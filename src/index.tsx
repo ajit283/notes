@@ -6,8 +6,6 @@ import { staticPlugin } from "@elysiajs/static";
 import { ip } from "elysia-ip";
 import Database from "libsql";
 import { createClient } from "@libsql/client";
-import { EventEmitter } from "events";
-import { Stream } from "@elysiajs/stream";
 
 const url = process.env.LIBSQL_URL!!;
 const authToken = process.env.LIBSQL_TOKEN!!;
@@ -35,7 +33,6 @@ const changeNote = async (text: string) => {
   }
   timeOutRunning = true;
   timeOut = setTimeout(async () => {
-    // console.log("sending to db", text);
     await client.execute({
       sql: "update notes set content = ? where id = 0",
       args: [text],
@@ -44,46 +41,14 @@ const changeNote = async (text: string) => {
   }, 5000);
 };
 
-const eventEmitter = new EventEmitter();
-
-const MAX_LISTENERS = 50;
-
-eventEmitter.setMaxListeners(MAX_LISTENERS + 3);
-
-// Define a type for the listener function
-type ListenerFunction = (...args: any[]) => void;
-
-// Array to keep track of listeners
-let listeners: ListenerFunction[] = [];
-
-// Function to add a listener
-function addListener(eventName: string, listenerFunction: ListenerFunction) {
-  console.log("adding event listener");
-  eventEmitter.on(eventName, listenerFunction);
-  listeners.push(listenerFunction); // Add to tracking array
-  console.log(listeners);
-  console.log(listeners.length);
-
-  // Check and remove the oldest listener if limit exceeded
-  if (listeners.length >= MAX_LISTENERS) {
-    console.log("removing");
-    const oldestListener = listeners.shift(); // Remove from tracking array
-    if (oldestListener) {
-      eventEmitter.removeListener(eventName, oldestListener); // Remove from EventEmitter
-    }
-    console.log("Removed oldest listener");
-  }
-}
-
 const app = new Elysia()
 
   .use(html())
   .use(
     tailwind({
-      // 2. Use
-      path: "/public/stylesheet.css", // 2.1 Where to serve the compiled stylesheet;
-      source: "./src/styles.css", // 2.2 Specify source file path (where your @tailwind directives are);
-      config: "./tailwind.config.js", // 2.3 Specify config file path or Config object;
+      path: "/public/stylesheet.css",
+      source: "./src/styles.css",
+      config: "./tailwind.config.js",
     })
   )
   .use(staticPlugin())
@@ -163,36 +128,14 @@ const app = new Elysia()
       </Layout>
     );
   })
-  .post("/edit", async ({ body, set }) => {
-    //@ts-ignore
-    await changeNote(body.text);
-    // set.redirect = "/get_ip";
-    return "ok";
-  })
-  .get("/get_ip", async ({ ip }) => {
-    // console.log("ip:", ip);
-    // eventEmitter.emit("change", ip);
-    return "ok";
-  })
-  .get("/event_stream", ({ ip }) => {
-    console.log("/event_stream ip:", ip);
-    return new Stream((stream) => {
-      //@ts-ignore
-      const onChangeListener = async (editIp) => {
-        //@ts-ignore
-        console.log("onChangeListener", editIp.address, ip.address);
-        //@ts-ignore
-        if (ip.address !== editIp.address) {
-          console.log("sending message");
-          stream.send("message");
-        } else {
-          console.log("not sending message");
-        }
-      };
-      // eventEmitter.on("change", (event, listener) => {});
-      addListener("change", onChangeListener);
-    });
-  })
+  .post(
+    "/edit",
+    async ({ body }) => {
+      await changeNote(body.text);
+      return "ok";
+    },
+    { body: t.Object({ text: t.String() }) }
+  )
   .listen({
     port: process.env.PORT ?? 3000,
     hostname: "0.0.0.0",
@@ -216,12 +159,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body
-      hx-boost="true"
-      // hx-ext="sse" sse-connect="/event_stream"
-    >
-      {children}
-    </body>
+    <body hx-boost="true">{children}</body>
   </html>
 );
 
