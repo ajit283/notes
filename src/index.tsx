@@ -166,12 +166,12 @@ const app = new Elysia()
   .post("/edit", async ({ body, set }) => {
     //@ts-ignore
     await changeNote(body.text);
-    set.redirect = "/get_ip";
+    // set.redirect = "/get_ip";
     return "ok";
   })
   .get("/get_ip", async ({ ip }) => {
-    console.log("ip:", ip);
-    eventEmitter.emit("change", ip);
+    // console.log("ip:", ip);
+    // eventEmitter.emit("change", ip);
     return "ok";
   })
   .get("/event_stream", ({ ip }) => {
@@ -216,7 +216,10 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body hx-boost="true" hx-ext="sse" sse-connect="/event_stream">
+    <body
+      hx-boost="true"
+      // hx-ext="sse" sse-connect="/event_stream"
+    >
       {children}
     </body>
   </html>
