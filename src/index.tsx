@@ -5,6 +5,10 @@ import { tailwind } from "elysia-tailwind"; // 1. Import
 import { staticPlugin } from "@elysiajs/static";
 import Database from "libsql";
 import { createClient } from "@libsql/client";
+import { Stream } from "@elysiajs/stream";
+import { EventEmitter } from "events";
+import { cors } from "@elysiajs/cors";
+import { randomUUID } from "crypto";
 
 const url = process.env.LIBSQL_URL!!;
 const authToken = process.env.LIBSQL_TOKEN!!;
@@ -25,6 +29,8 @@ const changeNote = async (text: string) => {
   });
 };
 
+const eventEmitter = new EventEmitter();
+
 const app = new Elysia()
 
   .use(html())
@@ -37,7 +43,7 @@ const app = new Elysia()
     })
   )
   .use(staticPlugin())
-  .get("/", async () => {
+  .get("/", async ({ cookie: { clientUuid } }) => {
     const note = await client.execute("select content from notes where id = 0");
 
     function getCurrentDate(): string {
@@ -82,15 +88,28 @@ const app = new Elysia()
       return `${day}, ${ordinalDate} ${month} ${year}`;
     }
 
+    // console.log(clientUuid);
+    if (!clientUuid.value) {
+      clientUuid.value = randomUUID();
+      console.log("clientUUID, /", clientUuid.value);
+    }
+
     return (
       <Layout>
-        <div class="text-2xl font-custom  bg-black text-white flex flex-col p-3">
+        <div
+          hx-get="/"
+          hx-trigger="sse:message"
+          hx-swap="outerHTML"
+          class="text-2xl font-custom  bg-black text-white flex flex-col p-3"
+        >
           <div>{getCurrentDate()}</div>
           <div>=========================</div>
           <textarea
+            id="textarea"
             spellcheck="false"
             hx-post="/edit"
-            hx-trigger="keyup changed "
+            hx-swap="none"
+            hx-trigger="keyup changed"
             name="text"
             class="bg-black text-white w-full min-h-screen border-none outline-none appearance-none focus:ring-0 focus:outline-none"
           >
@@ -100,12 +119,26 @@ const app = new Elysia()
       </Layout>
     );
   })
-  .post("/edit", async ({ body }) => {
+  .post("/edit", async ({ body, cookie: { clientUuid } }) => {
     //@ts-ignore
     await changeNote(body.text);
-    return "";
+    console.log(clientUuid.value);
+    console.log("clientUUID, edit", clientUuid.value);
+    eventEmitter.emit("change", clientUuid.value);
+    return "ok";
   })
-
+  .get("/event_stream", ({ cookie: { clientUuid } }) => {
+    console.log("clientUUID, event_stream", clientUuid.value);
+    return new Stream((stream) => {
+      eventEmitter.on("change", async (uuid) => {
+        if (uuid !== clientUuid.value) {
+          console.log("FIRE @", uuid, clientUuid.value);
+          stream.send("message");
+        }
+      });
+    });
+  })
+  .use(cors())
   .listen({
     port: process.env.PORT ?? 3000,
     hostname: "0.0.0.0",
@@ -114,15 +147,19 @@ const app = new Elysia()
 const Layout = ({ children }: PropsWithChildren) => (
   <html lang="en">
     <head>
-      <title>Hello World</title>
+      <title>Notes</title>
 
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
 
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
+      <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+      <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body>{children}</body>
+    <body hx-ext="sse" sse-connect="/event_stream">
+      {children}
+    </body>
   </html>
 );
 

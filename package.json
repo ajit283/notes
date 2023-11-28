@@ -6,15 +6,18 @@
     "dev": "bun run --watch src/index.tsx"
   },
   "dependencies": {
+    "@elysiajs/cors": "^0.7.2",
     "@elysiajs/html": "^0.7.3",
     "@elysiajs/static": "^0.7.1",
+    "@elysiajs/stream": "^0.7.2",
     "@kitajs/html": "^3.0.10",
     "@libsql/client": "^0.4.0-pre.2",
     "elysia": "latest",
     "elysia-tailwind": "1.0.7",
     "libsql": "^0.2.0-pre.2",
     "postgres": "^3.4.3",
-    "tailwindcss": "^3.3.5"
+    "tailwindcss": "^3.3.5",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "bun-types": "latest"
