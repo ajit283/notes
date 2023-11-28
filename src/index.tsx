@@ -96,8 +96,6 @@ const app = new Elysia()
       return `${day}, ${ordinalDate} ${month} ${year}`;
     }
 
-    // console.log("timeout", timeOutRunning);
-
     if (!timeOutRunning) {
       res = await client.execute("select content from notes where id = 0");
       note = res.rows[0].content;
@@ -142,6 +140,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <meta name="viewport" content="width=device-width, initial-scale=1" />
 
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
+      <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
     <body hx-boost="true">{children}</body>
