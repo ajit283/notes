@@ -138,14 +138,15 @@ const Layout = ({ children }: PropsWithChildren) => (
   <html lang="en">
     <head>
       <title>Notes</title>
-
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+      />
 
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black" />
       <meta name="apple-mobile-web-app-title" content="Notes" />
-
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
