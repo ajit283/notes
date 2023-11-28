@@ -8,6 +8,7 @@
   "dependencies": {
     "@elysiajs/html": "^0.7.3",
     "@elysiajs/static": "^0.7.1",
+    "@elysiajs/stream": "^0.7.2",
     "@kitajs/html": "^3.0.10",
     "@libsql/client": "^0.4.0-pre.2",
     "elysia": "latest",
