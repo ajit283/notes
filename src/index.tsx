@@ -108,7 +108,9 @@ const app = new Elysia()
           class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3"
         >
           <div>{getCurrentDate()}</div>
-          <div>=========================</div>
+          <div class="w-full overflow-x-hidden">
+            ======================================
+          </div>
           <textarea
             spellcheck="false"
             hx-post="/edit"
@@ -151,7 +153,9 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
     </head>
-    <body hx-boost="true">{children}</body>
+    <body class="overflow-x-hidden bg-black" hx-boost="true">
+      {children}
+    </body>
   </html>
 );
 
