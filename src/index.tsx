@@ -46,7 +46,9 @@ const changeNote = async (text: string) => {
 
 const eventEmitter = new EventEmitter();
 
-const MAX_LISTENERS = 5;
+const MAX_LISTENERS = 50;
+
+eventEmitter.setMaxListeners(MAX_LISTENERS + 3);
 
 // Define a type for the listener function
 type ListenerFunction = (...args: any[]) => void;
@@ -178,9 +180,13 @@ const app = new Elysia()
       //@ts-ignore
       const onChangeListener = async (editIp) => {
         //@ts-ignore
+        console.log("onChangeListener", editIp.address, ip.address);
+        //@ts-ignore
         if (ip.address !== editIp.address) {
           console.log("sending message");
           stream.send("message");
+        } else {
+          console.log("not sending message");
         }
       };
       // eventEmitter.on("change", (event, listener) => {});
