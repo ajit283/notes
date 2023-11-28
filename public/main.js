@@ -1,8 +1,8 @@
 document.addEventListener("visibilitychange", function () {
-    location.reload();
+    htmx.ajax('GET', '/', '#content');
 
 });
 
 window.addEventListener('focus', function () {
-    location.reload();
+    htmx.ajax('GET', '/', '#content');
 });
