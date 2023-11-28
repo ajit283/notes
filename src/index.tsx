@@ -103,7 +103,10 @@ const app = new Elysia()
 
     return (
       <Layout>
-        <div class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3">
+        <div
+          id="content"
+          class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3"
+        >
           <div>{getCurrentDate()}</div>
           <div>=========================</div>
           <textarea
