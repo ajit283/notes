@@ -178,7 +178,7 @@ const app = new Elysia()
       //@ts-ignore
       const onChangeListener = async (editIp) => {
         //@ts-ignore
-        if (true) {
+        if (ip.address !== editIp.address) {
           console.log("sending message");
           stream.send("message");
         }
