@@ -105,7 +105,7 @@ const app = new Elysia()
 
     return (
       <Layout>
-        <div class="text-xl font-custom  bg-black text-white flex flex-col p-3">
+        <div class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3">
           <div>{getCurrentDate()}</div>
           <div>=========================</div>
           <textarea
@@ -114,7 +114,7 @@ const app = new Elysia()
             hx-trigger="keyup changed"
             hx-swap="none"
             name="text"
-            class="bg-black text-white w-full min-h-screen border-none outline-none appearance-none focus:ring-0 focus:outline-none"
+            class="bg-black text-white w-full flex-grow border-none outline-none appearance-none focus:ring-0 focus:outline-none"
           >
             {note}
           </textarea>
