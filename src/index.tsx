@@ -157,6 +157,8 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
+      <link rel="apple-touch-icon" href="../public/icon.png"></link>
+      <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
     <body hx-boost="true">{children}</body>
   </html>
