@@ -6,6 +6,7 @@ import { staticPlugin } from "@elysiajs/static";
 import { ip } from "elysia-ip";
 import Database from "libsql";
 import { createClient } from "@libsql/client";
+import { write } from "fs";
 
 const url = process.env.LIBSQL_URL!!;
 const authToken = process.env.LIBSQL_TOKEN!!;
@@ -23,16 +24,19 @@ let res = await client.execute("select content from notes where id = 0");
 
 let note = res.rows[0].content;
 
+let history: string[] = [note as string];
+
 let timeOut: NodeJS.Timeout | null;
 let timeOutRunning = false;
 
-const changeNote = async (text: string) => {
+const changeNote = async (text: string, writeToHistory = true) => {
   note = text;
   if (timeOut) {
     clearTimeout(timeOut);
   }
   timeOutRunning = true;
   timeOut = setTimeout(async () => {
+    history.push(text);
     await client.execute({
       sql: "update notes set content = ? where id = 0",
       args: [text],
@@ -124,11 +128,29 @@ const app = new Elysia()
           >
             {note}
           </textarea>
+          <div class="flex flex-row pt-2">
+            <button
+              hx-get="/rollback"
+              hx-target="body"
+              class="px-2 border-2 border-white"
+            >
+              &lt;&lt;
+            </button>
+          </div>
         </div>
       </Layout>
     );
   })
   .get("/text", () => note)
+  .get("/rollback", ({ set }) => {
+    console.log(history);
+    if (history.length > 0) {
+      history.pop();
+      changeNote(history[history.length - 1]!!, false);
+    }
+    set.redirect = "/";
+    return "ok";
+  })
   .post(
     "/edit",
     async ({ body }) => {
