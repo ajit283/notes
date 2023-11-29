@@ -151,7 +151,6 @@ const Layout = ({ children }: PropsWithChildren) => (
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
       />
 
-      <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black" />
       <meta name="apple-mobile-web-app-title" content="Notes" />
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
