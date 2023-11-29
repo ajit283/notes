@@ -128,6 +128,7 @@ const app = new Elysia()
       </Layout>
     );
   })
+  .get("/text", () => note)
   .post(
     "/edit",
     async ({ body }) => {
