@@ -136,6 +136,14 @@ const app = new Elysia()
     },
     { body: t.Object({ text: t.String() }) }
   )
+  .post(
+    "/prepend",
+    ({ body }) => {
+      changeNote(body.text + note);
+      return "ok";
+    },
+    { body: t.Object({ text: t.String() }) }
+  )
   .listen({
     port: process.env.PORT ?? 3000,
     hostname: "0.0.0.0",
