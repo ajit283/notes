@@ -112,7 +112,7 @@ const app = new Elysia()
           hx-trigger="sse:message"
           hx-swap="outerHTML"
           id="content"
-          class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3"
+          class="text-xl font-custom  h-[100dvh] dark:bg-black dark:text-white bg-stone-100 flex flex-col p-3"
         >
           <div class="flex flex-row justify-between">
             <div>{getCurrentDate()}</div>
@@ -129,7 +129,7 @@ const app = new Elysia()
             hx-trigger="keyup changed"
             hx-swap="none"
             name="text"
-            class="bg-black text-white w-full flex-grow border-none outline-none appearance-none focus:ring-0 focus:outline-none"
+            class="dark:bg-black bg-stone-100  w-full flex-grow border-none outline-none appearance-none focus:ring-0 focus:outline-none"
           >
             {note}
           </textarea>
@@ -169,7 +169,7 @@ const app = new Elysia()
   });
 
 const Layout = ({ children }: PropsWithChildren) => (
-  <html class="bg-black overflow-hidden" lang="en">
+  <html class="dark:bg-black bg-stone-100 overflow-hidden" lang="en">
     <head>
       <title>Notes</title>
       <meta charset="utf-8" />
