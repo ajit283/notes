@@ -139,7 +139,7 @@ const app = new Elysia()
   .post(
     "/prepend",
     ({ body }) => {
-      changeNote(body.text + note);
+      changeNote(body.text + "\n\n" + note);
       return "ok";
     },
     { body: t.Object({ text: t.String() }) }
