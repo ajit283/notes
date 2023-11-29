@@ -116,7 +116,7 @@ const app = new Elysia()
         >
           <div class="flex flex-row justify-between">
             <div>{getCurrentDate()}</div>
-            <button hx-get="/rollback" hx-target="body" class="inline-block">
+            <button hx-post="/rollback" hx-target="body" class="inline-block">
               &lt;&lt;
             </button>
           </div>
@@ -129,6 +129,7 @@ const app = new Elysia()
             hx-trigger="keyup changed"
             hx-swap="none"
             name="text"
+            id="textarea"
             class="dark:bg-black bg-stone-100  w-full flex-grow border-none outline-none appearance-none focus:ring-0 focus:outline-none"
           >
             {note}
@@ -138,9 +139,9 @@ const app = new Elysia()
     );
   })
   .get("/text", () => note)
-  .get("/rollback", ({ set }) => {
+  .post("/rollback", ({ set }) => {
     console.log(history);
-    if (history.length > 0) {
+    if (history.length > 1) {
       history.pop();
       changeNote(history[history.length - 1]!!, false);
     }
@@ -182,12 +183,15 @@ const Layout = ({ children }: PropsWithChildren) => (
       <meta name="apple-mobile-web-app-title" content="Notes" />
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
       <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+      <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
       <script src="../public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
-    <body hx-boost="true">{children}</body>
+    <body id="body" hx-boost="true">
+      {children}
+    </body>
   </html>
 );
 
