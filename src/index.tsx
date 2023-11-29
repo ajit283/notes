@@ -114,7 +114,12 @@ const app = new Elysia()
           id="content"
           class="text-xl font-custom  h-[100dvh] bg-black text-white flex flex-col p-3"
         >
-          <div>{getCurrentDate()}</div>
+          <div class="flex flex-row justify-between">
+            <div>{getCurrentDate()}</div>
+            <button hx-get="/rollback" hx-target="body" class="inline-block">
+              &lt;&lt;
+            </button>
+          </div>
           <div class="w-full overflow-x-hidden">
             ======================================
           </div>
@@ -128,15 +133,6 @@ const app = new Elysia()
           >
             {note}
           </textarea>
-          <div class="flex flex-row pt-2">
-            <button
-              hx-get="/rollback"
-              hx-target="body"
-              class="px-2 border-2 border-white"
-            >
-              &lt;&lt;
-            </button>
-          </div>
         </div>
       </Layout>
     );
