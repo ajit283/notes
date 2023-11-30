@@ -39,7 +39,9 @@ const changeNote = async (text: string, writeToHistory = true) => {
   }
   timeOutRunning = true;
   timeOut = setTimeout(async () => {
-    history.push(text);
+    if (writeToHistory) {
+      history.push(text);
+    }
     await client.execute({
       sql: "update notes set content = ? where id = 0",
       args: [text],
@@ -121,7 +123,11 @@ const app = new Elysia()
         >
           <div class="flex flex-row justify-between">
             <div>{getCurrentDate()}</div>
-            <button hx-post="/rollback" hx-target="body" class="inline-block">
+            <button
+              hx-post="/rollback"
+              hx-target="#content"
+              class="inline-block"
+            >
               &lt;&lt;
             </button>
           </div>
