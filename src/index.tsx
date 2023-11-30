@@ -59,7 +59,9 @@ const app = new Elysia()
     })
   )
   .use(staticPlugin())
-  .use(ip())
+  .use((app) =>
+    app.derive(({ request }) => ({ ip: app.server?.requestIP(request) }))
+  )
   .get("/", async () => {
     function getCurrentDate(): string {
       const days = [
@@ -161,6 +163,7 @@ const app = new Elysia()
     },
     { body: t.Object({ text: t.String() }) }
   )
+  //@ts-ignore
   .get("/ip", ({ ip }) => {
     eventEmitter.emit("message", ip);
     return "ok";
@@ -173,6 +176,7 @@ const app = new Elysia()
     },
     { body: t.Object({ text: t.String() }) }
   )
+  //@ts-ignore
   .get("/event_stream", ({ ip, request }) => {
     console.log("new connection");
 
