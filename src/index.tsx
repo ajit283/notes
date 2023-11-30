@@ -165,6 +165,7 @@ const app = new Elysia()
   )
   //@ts-ignore
   .get("/ip", ({ request }) => {
+    console.log(request.headers);
     const ip = request.headers.get("X-Envoy-External-Address");
     eventEmitter.emit("message", ip);
     return "ok";
