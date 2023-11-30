@@ -164,7 +164,8 @@ const app = new Elysia()
     { body: t.Object({ text: t.String() }) }
   )
   //@ts-ignore
-  .get("/ip", ({ ip }) => {
+  .get("/ip", ({ request }) => {
+    const ip = request.headers.get("X-Envoy-External-Address");
     eventEmitter.emit("message", ip);
     return "ok";
   })
@@ -177,8 +178,10 @@ const app = new Elysia()
     { body: t.Object({ text: t.String() }) }
   )
   //@ts-ignore
-  .get("/event_stream", ({ ip, request }) => {
+  .get("/event_stream", ({ request }) => {
     console.log("new connection");
+
+    const ip = request.headers.get("X-Envoy-External-Address");
 
     const stream = new Stream((stream) => {
       const eventIp = ip;
