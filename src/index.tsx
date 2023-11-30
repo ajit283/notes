@@ -6,7 +6,8 @@ import { staticPlugin } from "@elysiajs/static";
 import { ip } from "elysia-ip";
 import Database from "libsql";
 import { createClient } from "@libsql/client";
-import { write } from "fs";
+import { EventEmitter } from "events";
+import { Stream } from "@elysiajs/stream";
 
 const url = process.env.LIBSQL_URL!!;
 const authToken = process.env.LIBSQL_TOKEN!!;
@@ -23,6 +24,8 @@ await client.execute(
 let res = await client.execute("select content from notes where id = 0");
 
 let note = res.rows[0].content;
+
+const eventEmitter = new EventEmitter();
 
 let history: string[] = [note as string];
 
@@ -110,7 +113,7 @@ const app = new Elysia()
         <div
           hx-get="/"
           hx-trigger="sse:message"
-          hx-swap="outerHTML"
+          hx-swap="morph:outerHTML"
           id="content"
           class="text-xl font-custom  h-[100dvh] dark:bg-black dark:text-white bg-stone-100 flex flex-col p-3"
         >
@@ -150,12 +153,18 @@ const app = new Elysia()
   })
   .post(
     "/edit",
-    async ({ body }) => {
+    async ({ body, set }) => {
       await changeNote(body.text);
+      set.redirect = "/ip";
+
       return "ok";
     },
     { body: t.Object({ text: t.String() }) }
   )
+  .get("/ip", ({ ip }) => {
+    eventEmitter.emit("message", ip);
+    return "ok";
+  })
   .post(
     "/prepend",
     ({ body }) => {
@@ -164,6 +173,30 @@ const app = new Elysia()
     },
     { body: t.Object({ text: t.String() }) }
   )
+  .get("/event_stream", ({ ip, request }) => {
+    console.log("new connection");
+
+    const stream = new Stream((stream) => {
+      const eventIp = ip;
+
+      const eventFun = (ip: any) => {
+        //@ts-ignore
+        if (ip.address !== eventIp.address) {
+          stream.send("message");
+        }
+      };
+
+      eventEmitter.on("message", eventFun);
+      request.signal.addEventListener("abort", () => {
+        eventEmitter.off("message", eventFun);
+        console.log("closed");
+      });
+      stream.event = "message";
+    });
+
+    return stream;
+  })
+
   .listen({
     port: process.env.PORT ?? 3000,
     hostname: "0.0.0.0",
@@ -189,7 +222,12 @@ const Layout = ({ children }: PropsWithChildren) => (
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
-    <body id="body" hx-boost="true">
+    <body
+      id="body"
+      hx-ext="sse,morph"
+      sse-connect="/event_stream"
+      hx-boost="true"
+    >
       {children}
     </body>
   </html>
