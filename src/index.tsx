@@ -155,20 +155,14 @@ const app = new Elysia()
   })
   .post(
     "/edit",
-    async ({ body, set }) => {
+    async ({ body, request }) => {
       await changeNote(body.text);
-      set.redirect = "/ip";
-
+      const ip = request.headers.get("x-envoy-external-address");
+      eventEmitter.emit("message", ip);
       return "ok";
     },
     { body: t.Object({ text: t.String() }) }
   )
-  //@ts-ignore
-  .get("/ip", ({ request }) => {
-    const ip = request.headers.get("x-envoy-external-address");
-    eventEmitter.emit("message", ip);
-    return "ok";
-  })
   .post(
     "/prepend",
     ({ body }) => {
