@@ -165,9 +165,7 @@ const app = new Elysia()
   )
   //@ts-ignore
   .get("/ip", ({ request }) => {
-    console.log(request.headers);
     const ip = request.headers.get("x-envoy-external-address");
-    console.log(ip);
     eventEmitter.emit("message", ip);
     return "ok";
   })
@@ -189,11 +187,11 @@ const app = new Elysia()
       const eventIp = ip;
 
       const eventFun = (ip: any) => {
-        console.log("editor IP address: " + ip.address);
+        console.log("editor IP address: " + ip);
         //@ts-ignore
-        console.log("potential recipient IP address: " + eventIp.address);
+        console.log("potential recipient IP address: " + eventIp);
         //@ts-ignore
-        if (ip.address !== eventIp.address) {
+        if (ip !== eventIp) {
           stream.send("message");
         }
       };
