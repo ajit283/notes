@@ -166,7 +166,7 @@ const app = new Elysia()
   //@ts-ignore
   .get("/ip", ({ request }) => {
     console.log(request.headers);
-    const ip = request.headers.get("X-Envoy-External-Address");
+    const ip = request.headers.get("x-envoy-external-address");
     eventEmitter.emit("message", ip);
     return "ok";
   })
@@ -182,7 +182,7 @@ const app = new Elysia()
   .get("/event_stream", ({ request }) => {
     console.log("new connection");
 
-    const ip = request.headers.get("X-Envoy-External-Address");
+    const ip = request.headers.get("x-envoy-external-address");
 
     const stream = new Stream((stream) => {
       const eventIp = ip;
