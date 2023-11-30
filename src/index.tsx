@@ -180,6 +180,9 @@ const app = new Elysia()
       const eventIp = ip;
 
       const eventFun = (ip: any) => {
+        console.log("editor IP address: " + ip.address);
+        //@ts-ignore
+        console.log("potential recipient IP address: " + eventIp.address);
         //@ts-ignore
         if (ip.address !== eventIp.address) {
           stream.send("message");
