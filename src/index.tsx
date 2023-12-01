@@ -69,7 +69,7 @@ const app = new Elysia()
   .get("/authpage", () => {
     return (
       <Layout>
-        <div class="flex flex-col font-custom text-xl p-3 dark:bg-black dark:text-white text-black bg-stone-100">
+        <div class="flex flex-col font-custom text-xl p-3 dark:bg-black dark:text-white  bg-stone-100">
           <div class="flex flex-row justify-between">
             <div>Password</div>
           </div>
@@ -86,9 +86,9 @@ const app = new Elysia()
               type="password"
               name="password"
               id="password"
-              class="dark:bg-black max-w-lg bg-stone-100  w-full border-2 border-black px-1 outline-none appearance-none focus:ring-0 focus:outline-none"
+              class="dark:bg-black dark:text-white max-w-lg bg-stone-100  w-full border-2 border-black dark:border-white px-1 outline-none appearance-none focus:ring-0 focus:outline-none"
             />
-            <button type="submit" class="text-black">
+            <button type="submit" class="text-black dark:text-white">
               Submit
             </button>
           </form>
