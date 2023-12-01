@@ -204,7 +204,7 @@ const app = new Elysia()
                       </button>
                       <button
                         hx-post="/rollback"
-                        hx-target="#content"
+                        hx-target="#wrapper"
                         class="inline-block"
                       >
                         &lt;&lt;
