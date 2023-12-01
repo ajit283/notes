@@ -53,11 +53,11 @@ const changeNote = async (text: string, writeToHistory = true) => {
 const fixedAuthToken = crypto.randomUUID();
 
 const getId = (request: Request) => {
-  console.log(request.headers);
   const ip = request.headers.get("x-envoy-external-address");
   const userAgent = request.headers.get("user-agent");
+  console.log(userAgent);
 
-  return ip ?? "" + userAgent;
+  return (ip ?? "") + userAgent;
 };
 
 const app = new Elysia()
