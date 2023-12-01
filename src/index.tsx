@@ -50,6 +50,8 @@ const changeNote = async (text: string, writeToHistory = true) => {
   }, 5000);
 };
 
+const fixedAuthToken = crypto.randomUUID();
+
 const app = new Elysia()
 
   .use(html())
@@ -64,148 +66,227 @@ const app = new Elysia()
   .use((app) =>
     app.derive(({ request }) => ({ ip: app.server?.requestIP(request) }))
   )
-  .get("/", async () => {
-    function getCurrentDate(): string {
-      const days = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ];
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-
-      const now = new Date();
-      const day = days[now.getDay()];
-      const date = now.getDate();
-      const month = months[now.getMonth()];
-      const year = now.getFullYear();
-
-      const ordinalDate =
-        date +
-        (date > 0
-          ? ["th", "st", "nd", "rd"][
-              (date > 3 && date < 21) || date % 10 > 3 ? 0 : date % 10
-            ]
-          : "");
-
-      return `${day}, ${ordinalDate} ${month} ${year}`;
-    }
-
-    if (!timeOutRunning) {
-      res = await client.execute("select content from notes where id = 0");
-      note = res.rows[0].content;
-    }
-
+  .get("/authpage", () => {
     return (
       <Layout>
-        <div
-          hx-get="/"
-          hx-trigger="sse:message"
-          hx-swap="morph:outerHTML"
-          id="content"
-          class="text-xl font-custom  h-[100dvh] dark:bg-black dark:text-white bg-stone-100 flex flex-col p-3"
-        >
+        <div class="flex flex-col font-custom text-xl p-3 dark:bg-black dark:text-white text-black bg-stone-100">
           <div class="flex flex-row justify-between">
-            <div>{getCurrentDate()}</div>
-            <button
-              hx-post="/rollback"
-              hx-target="#content"
-              class="inline-block"
-            >
-              &lt;&lt;
-            </button>
+            <div>Password</div>
           </div>
           <div class="w-full overflow-x-hidden">
             ====================================================================================================================================================================================================================================
           </div>
-          <textarea
-            spellcheck="false"
-            hx-post="/edit"
-            hx-trigger="keyup changed"
-            hx-swap="none"
-            name="text"
-            id="textarea"
-            class="dark:bg-black bg-stone-100  w-full flex-grow border-none outline-none appearance-none focus:ring-0 focus:outline-none"
+          <form
+            hx-post="/auth"
+            hx-target="body"
+            hx-push-url="true"
+            class="flex flex-row justify-center items-center gap-3 pt-2"
           >
-            {note}
-          </textarea>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              class="dark:bg-black max-w-lg bg-stone-100  w-full border-2 border-black px-1 outline-none appearance-none focus:ring-0 focus:outline-none"
+            />
+            <button type="submit" class="text-black">
+              Submit
+            </button>
+          </form>
         </div>
       </Layout>
     );
   })
-  .get("/text", () => note)
-  .post("/rollback", ({ set }) => {
-    console.log(history);
-    if (history.length > 1) {
-      history.pop();
-      changeNote(history[history.length - 1]!!, false);
-    }
-    set.redirect = "/";
-    return "ok";
-  })
   .post(
-    "/edit",
-    async ({ body, request }) => {
-      await changeNote(body.text);
-      const ip = request.headers.get("x-envoy-external-address");
-      eventEmitter.emit("message", ip);
+    "/auth",
+    ({ body, set, cookie: { notesAuthToken } }) => {
+      if (body.password === process.env.PASSWORD) {
+        notesAuthToken.set({
+          value: fixedAuthToken,
+        });
+        set.redirect = "/";
+      } else {
+        set.redirect = "/authpage";
+      }
       return "ok";
     },
-    { body: t.Object({ text: t.String() }) }
+    { body: t.Object({ password: t.String() }) }
   )
-  .post(
-    "/prepend",
-    ({ body }) => {
-      changeNote(body.text + "\n\n" + note);
-      return "ok";
-    },
-    { body: t.Object({ text: t.String() }) }
-  )
-  //@ts-ignore
-  .get("/event_stream", ({ request }) => {
-    console.log("new connection");
-
-    const ip = request.headers.get("x-envoy-external-address");
-
-    const stream = new Stream((stream) => {
-      const eventIp = ip;
-
-      const eventFun = (ip: any) => {
-        console.log("editor IP address: " + ip);
-        //@ts-ignore
-        console.log("potential recipient IP address: " + eventIp);
-        //@ts-ignore
-        if (ip !== eventIp) {
-          stream.send("message");
+  .guard(
+    {
+      beforeHandle: ({ cookie: { notesAuthToken }, set }) => {
+        console.log(notesAuthToken.get());
+        if (notesAuthToken.get() !== fixedAuthToken) {
+          set.redirect = "/authpage";
+          return "ok";
         }
-      };
+      },
+    },
+    (app) =>
+      app
+        .get("/", async () => {
+          function getCurrentDate(): string {
+            const days = [
+              "Sunday",
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+            ];
+            const months = [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "Jun",
+              "Jul",
+              "Aug",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dec",
+            ];
 
-      eventEmitter.on("message", eventFun);
-      request.signal.addEventListener("abort", () => {
-        eventEmitter.off("message", eventFun);
-        console.log("closed");
-      });
-      stream.event = "message";
-    });
+            const now = new Date();
+            const day = days[now.getDay()];
+            const date = now.getDate();
+            const month = months[now.getMonth()];
+            const year = now.getFullYear();
 
-    return stream;
-  })
+            const ordinalDate =
+              date +
+              (date > 0
+                ? ["th", "st", "nd", "rd"][
+                    (date > 3 && date < 21) || date % 10 > 3 ? 0 : date % 10
+                  ]
+                : "");
+
+            return `${day}, ${ordinalDate} ${month} ${year}`;
+          }
+
+          if (!timeOutRunning) {
+            res = await client.execute(
+              "select content from notes where id = 0"
+            );
+            note = res.rows[0].content;
+          }
+
+          return (
+            <Layout>
+              <div hx-ext="sse" sse-connect="/event_stream">
+                <div
+                  hx-get="/"
+                  hx-trigger="sse:message"
+                  hx-swap="morph:outerHTML"
+                  id="content"
+                  class="text-xl font-custom  h-[100dvh] dark:bg-black dark:text-white bg-stone-100 flex flex-col p-3"
+                >
+                  <div class="flex flex-row justify-between">
+                    <div>{getCurrentDate()}</div>
+
+                    <div class="flex flex-row gap-3">
+                      <button
+                        hx-post="/logout"
+                        hx-target="body"
+                        hx-push-url="true"
+                      >
+                        X
+                      </button>
+                      <button
+                        hx-post="/rollback"
+                        hx-target="#content"
+                        class="inline-block"
+                      >
+                        &lt;&lt;
+                      </button>
+                    </div>
+                  </div>
+                  <div class="w-full overflow-x-hidden">
+                    ====================================================================================================================================================================================================================================
+                  </div>
+                  <textarea
+                    spellcheck="false"
+                    hx-post="/edit"
+                    hx-trigger="keyup changed"
+                    hx-swap="none"
+                    name="text"
+                    id="textarea"
+                    class="dark:bg-black bg-stone-100  w-full flex-grow border-none outline-none appearance-none focus:ring-0 focus:outline-none"
+                  >
+                    {note}
+                  </textarea>
+                </div>
+              </div>
+            </Layout>
+          );
+        })
+        .post("/logout", ({ set, cookie: { notesAuthToken } }) => {
+          notesAuthToken.set({
+            value: "",
+          });
+          set.redirect = "/authpage";
+          return "ok";
+        })
+        .get("/text", () => note)
+        .post("/rollback", ({ set }) => {
+          console.log(history);
+          if (history.length > 1) {
+            history.pop();
+            changeNote(history[history.length - 1]!!, false);
+          }
+          set.redirect = "/";
+          return "ok";
+        })
+        .post(
+          "/edit",
+          async ({ body, request }) => {
+            await changeNote(body.text);
+            const ip = request.headers.get("x-envoy-external-address");
+            eventEmitter.emit("message", ip);
+            return "ok";
+          },
+          { body: t.Object({ text: t.String() }) }
+        )
+        .post(
+          "/prepend",
+          ({ body }) => {
+            changeNote(body.text + "\n\n" + note);
+            return "ok";
+          },
+          { body: t.Object({ text: t.String() }) }
+        )
+        //@ts-ignore
+        .get("/event_stream", ({ request }) => {
+          console.log("new connection");
+
+          const ip = request.headers.get("x-envoy-external-address");
+
+          const stream = new Stream((stream) => {
+            const eventIp = ip;
+
+            const eventFun = (ip: any) => {
+              console.log("editor IP address: " + ip);
+              //@ts-ignore
+              console.log("potential recipient IP address: " + eventIp);
+              //@ts-ignore
+              if (ip !== eventIp) {
+                stream.send("message");
+              }
+            };
+
+            eventEmitter.on("message", eventFun);
+            request.signal.addEventListener("abort", () => {
+              eventEmitter.off("message", eventFun);
+              console.log("closed");
+            });
+            stream.event = "message";
+          });
+
+          return stream;
+        })
+  )
 
   .listen({
     port: process.env.PORT ?? 3000,
@@ -232,12 +313,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
-    <body
-      id="body"
-      hx-ext="sse,morph"
-      sse-connect="/event_stream"
-      hx-boost="true"
-    >
+    <body id="body" hx-ext="morph" hx-boost="true">
       {children}
     </body>
   </html>
