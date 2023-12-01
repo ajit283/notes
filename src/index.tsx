@@ -52,6 +52,13 @@ const changeNote = async (text: string, writeToHistory = true) => {
 
 const fixedAuthToken = crypto.randomUUID();
 
+const getId = (request: Request) => {
+  const ip = request.headers.get("x-envoy-external-address");
+  const userAgent = request.headers.get("user-agent");
+
+  return ip ?? "" + userAgent;
+};
+
 const app = new Elysia()
 
   .use(html())
@@ -175,7 +182,7 @@ const app = new Elysia()
 
           return (
             <Layout>
-              <div hx-ext="sse" sse-connect="/event_stream">
+              <div id="wrapper" hx-ext="sse" sse-connect="/event_stream">
                 <div
                   hx-get="/"
                   hx-trigger="sse:message"
@@ -243,8 +250,8 @@ const app = new Elysia()
           "/edit",
           async ({ body, request }) => {
             await changeNote(body.text);
-            const ip = request.headers.get("x-envoy-external-address");
-            eventEmitter.emit("message", ip);
+            const id = getId(request);
+            eventEmitter.emit("message", id);
             return "ok";
           },
           { body: t.Object({ text: t.String() }) }
@@ -261,17 +268,17 @@ const app = new Elysia()
         .get("/event_stream", ({ request }) => {
           console.log("new connection");
 
-          const ip = request.headers.get("x-envoy-external-address");
+          const id = getId(request);
 
           const stream = new Stream((stream) => {
-            const eventIp = ip;
+            const eventId = id;
 
             const eventFun = (ip: any) => {
               console.log("editor IP address: " + ip);
               //@ts-ignore
-              console.log("potential recipient IP address: " + eventIp);
+              console.log("potential recipient IP address: " + eventId);
               //@ts-ignore
-              if (ip !== eventIp) {
+              if (ip !== eventId) {
                 stream.send("message");
               }
             };
