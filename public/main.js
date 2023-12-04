@@ -1,8 +1,15 @@
-document.addEventListener("visibilitychange", function () {
-    htmx.ajax('GET', '/', { target: "body", swap: "morph:innerHTML" });
 
+
+document.addEventListener("visibilitychange", function () {
+    if (window.location.pathname === '/') {
+        htmx.ajax('GET', '/', { target: "body", swap: "morph:innerHTML" });
+    }
 });
 
 window.addEventListener('focus', function () {
-    htmx.ajax('GET', '/', { target: "body", swap: "morph:innerHTML" });
+    if (window.location.pathname === '/') {
+        htmx.ajax('GET', '/', { target: "body", swap: "morph:innerHTML" });
+    }
 });
+
+
