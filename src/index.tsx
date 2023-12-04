@@ -545,7 +545,7 @@ const ChatLayout = (
 
 const Switcher = (current: "notes" | "llm") => {
   return (
-    <div class="py-1 flex flex-row gap-3 dark:text-white text-black">
+    <div class="pt-1 flex flex-row gap-3 dark:text-white text-black">
       <a
         href="/"
         class={`${
