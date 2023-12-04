@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { html } from "@elysiajs/html";
+
 import { PropsWithChildren } from "@kitajs/html";
 import { tailwind } from "elysia-tailwind"; // 1. Import
 import { staticPlugin } from "@elysiajs/static";
@@ -8,9 +9,23 @@ import Database from "libsql";
 import { createClient } from "@libsql/client";
 import { EventEmitter } from "events";
 import { Stream } from "@elysiajs/stream";
+import OpenAI from "openai";
+
+declare global {
+  namespace JSX {
+    interface HtmlTag {
+      ["oninput"]?: string;
+    }
+  }
+}
 
 const url = process.env.LIBSQL_URL!!;
 const authToken = process.env.LIBSQL_TOKEN!!;
+const openAiKey = process.env.OPENAI_KEY!!;
+
+const openai = new OpenAI({
+  apiKey: openAiKey,
+});
 
 const client = createClient({
   url: url,
@@ -19,6 +34,10 @@ const client = createClient({
 
 await client.execute(
   "CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, content TEXT)"
+);
+
+await client.execute(
+  "CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY, title TEXT, chat TEXT)"
 );
 
 let res = await client.execute("select content from notes where id = 0");
@@ -50,7 +69,19 @@ const changeNote = async (text: string, writeToHistory = true) => {
   }, 5000);
 };
 
-const fixedAuthToken = crypto.randomUUID();
+const getChats = async () => {
+  const { rows } = await client.execute("select * from chats");
+  return rows;
+};
+
+const addChat = async () => {
+  return await client.execute({
+    sql: "insert into chats (title, chat) values (?, ?) returning id",
+    args: ["New Chat", "[]"],
+  });
+};
+
+const fixedAuthToken = "f65e79ba-bb1b-4b62-9af0-4e3fba1ad027";
 
 const getId = (request: Request) => {
   const ip = request.headers.get("x-envoy-external-address");
@@ -77,7 +108,7 @@ const app = new Elysia()
   .get("/authpage", () => {
     return (
       <Layout>
-        <div class="flex flex-col font-custom text-xl p-3 dark:bg-black dark:text-white  bg-stone-100">
+        <div class="flex flex-col dark:bg-black dark:text-white  bg-stone-100">
           <div class="flex flex-row justify-between">
             <div>Password</div>
           </div>
@@ -183,13 +214,18 @@ const app = new Elysia()
 
           return (
             <Layout>
-              <div id="wrapper" hx-ext="sse" sse-connect="/event_stream">
+              <div
+                id="wrapper"
+                hx-ext="sse"
+                class="h-full"
+                sse-connect="/event_stream"
+              >
                 <div
                   hx-get="/"
                   hx-trigger="sse:message"
                   hx-swap="morph:outerHTML"
                   id="content"
-                  class="text-xl font-custom  h-[100dvh] dark:bg-black dark:text-white bg-stone-100 flex flex-col p-3"
+                  class=" h-full  dark:bg-black dark:text-white bg-stone-100 flex flex-col"
                 >
                   <div class="flex flex-row justify-between">
                     <div>{getCurrentDate()}</div>
@@ -225,6 +261,7 @@ const app = new Elysia()
                   >
                     {note}
                   </textarea>
+                  {Switcher("notes")}
                 </div>
               </div>
             </Layout>
@@ -265,7 +302,6 @@ const app = new Elysia()
           },
           { body: t.Object({ text: t.String() }) }
         )
-        //@ts-ignore
         .get("/event_stream", ({ request }) => {
           console.log("new connection");
 
@@ -294,12 +330,243 @@ const app = new Elysia()
 
           return stream;
         })
+        .group("/llm", (app) =>
+          app
+            .get("/", async () => {
+              const chats = await getChats();
+
+              return (
+                <Layout>
+                  <div class="flex flex-col items-start h-full dark:text-white">
+                    <button hx-post="/llm/add" hx-target="body">
+                      Add{" "}
+                    </button>
+                    <div class="flex-grow flex flex-col  h-full  items-start w-full overflow-y-scroll">
+                      {chats.toReversed().map((chat) => (
+                        <div class="flex flex-row justify-between w-full">
+                          <a href={`llm/chat/${chat.id}`}>
+                            <div>{chat.title}</div>
+                          </a>
+                          <div>{chat.id}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {Switcher("llm")}
+                  </div>
+                </Layout>
+              );
+            })
+            .post("/add", ({ set }) => {
+              addChat();
+              // console.log(id.rows[0].id);
+              set.redirect = "/llm";
+
+              return "ok";
+            })
+            .get("/chat/:id", async ({ params }) => {
+              const res = await client.execute({
+                sql: "select chat from chats where id = ?",
+                args: [params.id],
+              });
+
+              console.log("here");
+
+              const chat: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
+                await JSON.parse(res.rows[0].chat as string);
+              return (
+                <Layout>
+                  <div
+                    class="h-full flex flex-col-reverse dark:text-white"
+                    hx-ext="ws"
+                    ws-connect="/completion"
+                  >
+                    {Switcher("llm")}
+                    <div class="py-2">
+                      <form
+                        class="w-full flex flex-row gap-3"
+                        hx-on="htmx:wsAfterSend: this.reset()"
+                        ws-send
+                        hx-trigger="submit, keyup[ctrlKey&&key=='Enter']"
+                        id="chat-form"
+                      >
+                        <textarea
+                          rows="1"
+                          oninput='this.style.height = "";this.style.height = (this.scrollHeight + 4) + "px"'
+                          class="dark:bg-black  resize-y dark:text-white  bg-stone-100  w-full border-2 border-black dark:border-white px-1 outline-none appearance-none focus:ring-0 focus:outline-none"
+                          name="message"
+                        />
+                        <input name="id" hidden="true" value={params.id} />
+                        <button type="submit">Send</button>
+                      </form>
+                    </div>
+                    {ChatLayout("", "", chat)}
+                  </div>
+                </Layout>
+              );
+            })
+        )
   )
+  .ws("/completion", {
+    async message(ws, message) {
+      console.log(message);
+      const res = await client.execute({
+        sql: "select title, chat from chats where id = ?",
+        args: [(message as { id: string }).id],
+      });
+
+      const chat: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
+        await JSON.parse(res.rows[0].chat as string);
+
+      const parsedMessage = message as { message: string; id: string };
+
+      const stream = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        stream: true,
+        messages: [
+          ...chat,
+          {
+            role: "user",
+            content: parsedMessage.message,
+          },
+        ],
+      });
+
+      let msg = "";
+
+      for await (const message of stream) {
+        msg += message.choices[0].delta.content ?? "\n";
+        ws.send(ChatLayout(msg, parsedMessage.message, chat));
+      }
+
+      if (res.rows[0].title === "New Chat") {
+        const chatCompletion = await openai.chat.completions.create({
+          messages: [
+            { role: "user", content: "Summarize this chat in 2 words:" + msg },
+          ],
+          model: "gpt-4-1106-preview",
+        });
+
+        const title = chatCompletion.choices[0].message.content;
+
+        await client.execute({
+          sql: "update chats set title = ? where id = ?",
+          args: [title, parsedMessage.id],
+        });
+      }
+
+      await client.execute({
+        sql: "update chats set chat = ? where id = ?",
+        args: [
+          JSON.stringify([
+            ...chat,
+            { role: "user", content: parsedMessage.message },
+            { role: "assistant", content: msg },
+          ]),
+          parsedMessage.id,
+        ],
+      });
+    },
+  })
 
   .listen({
     port: process.env.PORT ?? 3000,
     hostname: "0.0.0.0",
   });
+
+const ChatLayout = (
+  msg: string,
+  userMsg: string,
+  chat: OpenAI.Chat.Completions.ChatCompletionMessageParam[]
+) => {
+  // detect code blocks and format them
+  const addNewLines = (utext: string) => {
+    let text = wrapCodeInHtml(utext);
+    text = text.replaceAll("\n", "<br />");
+    return text;
+  };
+
+  function wrapCodeInHtml(text: string): string {
+    // Regular expression to match code blocks
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+
+    // Replace each code block with a version wrapped in a div
+    return text.replace(codeBlockRegex, (match, lang, code) => {
+      // Escape HTML special characters in the code
+      const escapedCode = code
+
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/ /g, "&nbsp;") // Replace spaces with non-breaking space
+        .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;"); // Replace tabs with four non-breaking spaces
+      // .replace(/\n/g, "<br>"); // Replace newline characters with <br> tags
+
+      // Wrap in a div and include language as a class, if provided
+      return `<div class=" whitespace-nowrap p-2 border-2 border-black dark:border-white my-3  overflow-x-scroll text-sm ${
+        lang || ""
+      }">${escapedCode}</div>`;
+    });
+  }
+
+  return (
+    <div
+      id="chat"
+      hx-swap-oob="idiomorph"
+      class="flex-grow flex flex-col gap-3 overflow-y-scroll text-base overflow-x-hidden"
+    >
+      {chat.map((message) => (
+        <div class="flex flex-col">
+          <div class="text-blue-700">{message.role}</div>
+          <div>{addNewLines(message.content as string)}</div>
+        </div>
+      ))}
+      {userMsg != "" ? (
+        <div>
+          <div class="text-blue-700">user</div>
+          <div>{addNewLines(userMsg)}</div>
+        </div>
+      ) : (
+        <div></div>
+      )}
+
+      {msg != "" ? (
+        <div>
+          <div class="text-blue-700">assistant</div>
+          <div>{addNewLines(msg)}</div>
+        </div>
+      ) : (
+        <div></div>
+      )}
+    </div>
+  );
+};
+
+const Switcher = (current: "notes" | "llm") => {
+  return (
+    <div class="py-1 flex flex-row gap-3 dark:text-white text-black">
+      <a
+        href="/"
+        class={`${
+          current === "notes" &&
+          "bg-black dark:bg-white dark:text-black text-white"
+        }`}
+      >
+        <button>notes</button>
+      </a>
+      <a
+        href="/llm"
+        class={`${
+          current === "llm" &&
+          "bg-black dark:bg-white dark:text-black text-white"
+        }`}
+      >
+        <button>llm</button>
+      </a>
+    </div>
+  );
+};
 
 const Layout = ({ children }: PropsWithChildren) => (
   <html class="dark:bg-black bg-stone-100 overflow-hidden" lang="en">
@@ -315,13 +582,20 @@ const Layout = ({ children }: PropsWithChildren) => (
       <meta name="apple-mobile-web-app-title" content="Notes" />
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
       <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+      <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
       <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
-      <script src="../public/main.js"></script>
+      <script src="/public/main.js"></script>
+
       <link rel="stylesheet" href="/public/stylesheet.css" />
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
-    <body id="body" hx-ext="morph" hx-boost="true">
+    <body
+      id="body"
+      class="font-custom p-3  h-[100dvh] text-xl"
+      hx-ext="morph"
+      // hx-boost="true"
+    >
       {children}
     </body>
   </html>
