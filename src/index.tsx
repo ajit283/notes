@@ -493,7 +493,7 @@ const ChatLayout = (
 
   function wrapCodeInHtml(text: string): string {
     // Regular expression to match code blocks
-    const codeBlockRegex = /```(\w+(?:-\w+)?)\n([\s\S]*?)```/g;
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
 
     // Replace each code block with a version wrapped in a div
     return text.replace(codeBlockRegex, (match, lang, code) => {
