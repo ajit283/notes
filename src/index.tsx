@@ -590,7 +590,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
-    <body id="body" hx-ext="morph" hx-boost="true">
+    <body id="body" hx-ext="morph">
       {children}
     </body>
   </html>
