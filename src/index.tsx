@@ -384,13 +384,15 @@ const app = new Elysia()
                     <div class="py-2">
                       <form
                         class="w-full flex flex-row gap-3"
-                        hx-on="htmx:wsAfterSend: this.reset()"
+                        hx-on="htmx:wsAfterSend: this.reset(); document.getElementById('textarea').rows=1"
                         ws-send
                         hx-trigger="submit, keyup[ctrlKey&&key=='Enter']"
                         id="chat-form"
                       >
                         <textarea
+                          id="textarea"
                           rows="1"
+                          onkeyup='this.style.height = "";this.style.height = (this.scrollHeight + 4) + "px"'
                           oninput='this.style.height = "";this.style.height = (this.scrollHeight + 4) + "px"'
                           class="dark:bg-black  resize-y dark:text-white  bg-stone-100  w-full border-2 border-black dark:border-white px-1 outline-none appearance-none focus:ring-0 focus:outline-none"
                           name="message"
