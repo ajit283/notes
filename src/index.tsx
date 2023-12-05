@@ -108,7 +108,7 @@ const app = new Elysia()
   .get("/authpage", () => {
     return (
       <Layout>
-        <div class="flex flex-col dark:bg-black dark:text-white  bg-stone-100">
+        <div class="flex flex-col dark:bg-black dark:text-white  bg-stone-100 font-custom p-3  h-[100dvh] text-xl">
           <div class="flex flex-row justify-between">
             <div>Password</div>
           </div>
@@ -217,7 +217,7 @@ const app = new Elysia()
               <div
                 id="wrapper"
                 hx-ext="sse"
-                class="h-full"
+                class="font-custom p-3  h-[100dvh] text-xl"
                 sse-connect="/event_stream"
               >
                 <div
@@ -337,7 +337,7 @@ const app = new Elysia()
 
               return (
                 <Layout>
-                  <div class="flex flex-col items-start h-full dark:text-white">
+                  <div class="flex flex-col items-start font-custom p-3  h-[100dvh] text-xl dark:text-white">
                     <button hx-post="/llm/add" hx-target="body">
                       Add{" "}
                     </button>
@@ -376,7 +376,7 @@ const app = new Elysia()
               return (
                 <Layout>
                   <div
-                    class="h-full flex flex-col-reverse dark:text-white"
+                    class="font-custom p-3  h-[100dvh] text-xl flex flex-col-reverse dark:text-white"
                     hx-ext="ws"
                     ws-connect="/completion"
                   >
@@ -516,12 +516,14 @@ const ChatLayout = (
       hx-swap-oob="idiomorph"
       class="flex-grow flex flex-col gap-3 overflow-y-scroll text-base overflow-x-hidden"
     >
-      {chat.map((message) => (
-        <div class="flex flex-col">
-          <div class="text-blue-700">{message.role}</div>
-          <div>{addNewLines(message.content as string)}</div>
+      {msg != "" ? (
+        <div>
+          <div class="text-blue-700">assistant</div>
+          <div>{addNewLines(msg)}</div>
         </div>
-      ))}
+      ) : (
+        <div></div>
+      )}
       {userMsg != "" ? (
         <div>
           <div class="text-blue-700">user</div>
@@ -531,14 +533,12 @@ const ChatLayout = (
         <div></div>
       )}
 
-      {msg != "" ? (
-        <div>
-          <div class="text-blue-700">assistant</div>
-          <div>{addNewLines(msg)}</div>
+      {chat.toReversed().map((message) => (
+        <div class="flex flex-col">
+          <div class="text-blue-700">{message.role}</div>
+          <div>{addNewLines(message.content as string)}</div>
         </div>
-      ) : (
-        <div></div>
-      )}
+      ))}
     </div>
   );
 };
@@ -590,12 +590,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
-    <body
-      id="body"
-      class="font-custom p-3  h-[100dvh] text-xl"
-      hx-ext="morph"
-      // hx-boost="true"
-    >
+    <body id="body" hx-ext="morph" hx-boost="true">
       {children}
     </body>
   </html>
