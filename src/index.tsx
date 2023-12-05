@@ -345,7 +345,7 @@ const app = new Elysia()
                     <div class="flex-grow flex flex-col  h-full  items-start w-full overflow-y-scroll">
                       {chats.toReversed().map((chat) => (
                         <div class="flex flex-row justify-between w-full">
-                          <a href={`llm/chat/${chat.id}`}>
+                          <a hx-boost="false" href={`llm/chat/${chat.id}`}>
                             <div>{chat.title}</div>
                           </a>
                           <div>{chat.id}</div>
@@ -535,7 +535,6 @@ const ChatLayout = (
       ) : (
         <div></div>
       )}
-
       {chat.toReversed().map((message) => (
         <div class="flex flex-col">
           <div class="text-blue-700">{message.role}</div>
@@ -593,7 +592,7 @@ const Layout = ({ children }: PropsWithChildren) => (
       <meta name="apple-mobile-web-app-capable" content="yes"></meta>
       <link rel="apple-touch-startup-image" href="/../public/icon.png"></link>
     </head>
-    <body id="body" hx-ext="morph">
+    <body id="body" hx-ext="morph" hx-boost="true">
       {children}
     </body>
   </html>
