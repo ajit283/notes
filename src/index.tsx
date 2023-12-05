@@ -81,7 +81,7 @@ const addChat = async () => {
   });
 };
 
-const fixedAuthToken = "f65e79ba-bb1b-4b62-9af0-4e3fba1ad027";
+const fixedAuthToken = process.env.AUTH_TOKEN;
 
 const getId = (request: Request) => {
   const ip = request.headers.get("x-envoy-external-address");
@@ -152,9 +152,12 @@ const app = new Elysia()
   )
   .guard(
     {
-      beforeHandle: ({ cookie: { notesAuthToken }, set }) => {
+      beforeHandle: ({ cookie: { notesAuthToken }, set, request }) => {
         console.log(notesAuthToken.get());
-        if (notesAuthToken.get() !== fixedAuthToken) {
+        if (
+          notesAuthToken.get() !== fixedAuthToken &&
+          request.headers.get("notes-auth-token") !== fixedAuthToken
+        ) {
           set.redirect = "/authpage";
           return "ok";
         }
