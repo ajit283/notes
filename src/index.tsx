@@ -334,6 +334,7 @@ const app = new Elysia()
           app
             .get("/", async () => {
               const chats = await getChats();
+              console.log("here");
 
               return (
                 <Layout>
@@ -579,7 +580,6 @@ const Layout = ({ children }: PropsWithChildren) => (
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
       />
-
       <meta name="apple-mobile-web-app-status-bar-style" content="black" />
       <meta name="apple-mobile-web-app-title" content="Notes" />
       <script src="https://unpkg.com/htmx.org@1.9.9"></script>
@@ -587,10 +587,11 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
       <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
       <script src="/public/main.js"></script>
-
       <link rel="stylesheet" href="/public/stylesheet.css" />
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
+      <meta name="apple-mobile-web-app-capable" content="yes"></meta>
+      <link rel="apple-touch-startup-image" href="/../public/icon.png"></link>
     </head>
     <body id="body" hx-ext="morph">
       {children}
