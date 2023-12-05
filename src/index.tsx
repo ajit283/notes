@@ -553,6 +553,7 @@ const Switcher = (current: "notes" | "llm") => {
     <div class="pt-1 flex flex-row gap-3 dark:text-white text-black">
       <a
         href="/"
+        hx-boost="true"
         class={`${
           current === "notes" &&
           "bg-black dark:bg-white dark:text-black text-white"
@@ -562,6 +563,7 @@ const Switcher = (current: "notes" | "llm") => {
       </a>
       <a
         href="/llm"
+        hx-boost="true"
         class={`${
           current === "llm" &&
           "bg-black dark:bg-white dark:text-black text-white"
