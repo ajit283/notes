@@ -91,7 +91,7 @@ const getId = (request: Request) => {
   return (ip ?? "") + userAgent;
 };
 
-const app = new Elysia()
+export const app = new Elysia()
 
   .use(html())
   .use(
@@ -152,16 +152,16 @@ const app = new Elysia()
   )
   .guard(
     {
-      beforeHandle: ({ cookie: { notesAuthToken }, set, request }) => {
-        console.log(notesAuthToken.get());
-        if (
-          notesAuthToken.get() !== fixedAuthToken &&
-          request.headers.get("notes-auth-token") !== fixedAuthToken
-        ) {
-          set.redirect = "/authpage";
-          return "ok";
-        }
-      },
+      // beforeHandle: ({ cookie: { notesAuthToken }, set, request }) => {
+      //   console.log(notesAuthToken.get());
+      //   if (
+      //     notesAuthToken.get() !== fixedAuthToken &&
+      //     request.headers.get("notes-auth-token") !== fixedAuthToken
+      //   ) {
+      //     set.redirect = "/authpage";
+      //     return "ok";
+      //   }
+      // },
     },
     (app) =>
       app
@@ -348,7 +348,7 @@ const app = new Elysia()
                     <div class="flex-grow flex flex-col  h-full  items-start w-full overflow-y-scroll">
                       {chats.toReversed().map((chat) => (
                         <div class="flex flex-row justify-between w-full">
-                          <a hx-boost="false" href={`llm/chat/${chat.id}`}>
+                          <a href={`llm/chat/${chat.id}`}>
                             <div>{chat.title}</div>
                           </a>
                           <div>{chat.id}</div>
@@ -360,10 +360,9 @@ const app = new Elysia()
                 </Layout>
               );
             })
-            .post("/add", ({ set }) => {
-              addChat();
-              // console.log(id.rows[0].id);
-              set.redirect = "/llm";
+            .post("/add", async ({ set }) => {
+              const id = await addChat();
+              set.headers["HX-Redirect"] = "/llm" + "/chat/" + id.rows[0].id;
 
               return "ok";
             })
@@ -393,6 +392,9 @@ const app = new Elysia()
                         hx-trigger="submit, keyup[ctrlKey&&key=='Enter']"
                         id="chat-form"
                       >
+                        <button hx-post="/llm/add" hx-target="body">
+                          +
+                        </button>
                         <textarea
                           id="textarea"
                           rows="1"
@@ -553,7 +555,6 @@ const Switcher = (current: "notes" | "llm") => {
     <div class="pt-1 flex flex-row gap-3 dark:text-white text-black">
       <a
         href="/"
-        hx-boost="true"
         class={`${
           current === "notes" &&
           "bg-black dark:bg-white dark:text-black text-white"
@@ -563,7 +564,6 @@ const Switcher = (current: "notes" | "llm") => {
       </a>
       <a
         href="/llm"
-        hx-boost="true"
         class={`${
           current === "llm" &&
           "bg-black dark:bg-white dark:text-black text-white"
@@ -594,10 +594,8 @@ const Layout = ({ children }: PropsWithChildren) => (
       <link rel="stylesheet" href="/public/stylesheet.css" />
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
-      <meta name="apple-mobile-web-app-capable" content="yes"></meta>
-      <link rel="apple-touch-startup-image" href="/../public/icon.png"></link>
     </head>
-    <body id="body" hx-ext="morph" hx-boost="true">
+    <body id="body" hx-ext="morph">
       {children}
     </body>
   </html>
