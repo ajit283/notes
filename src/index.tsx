@@ -75,9 +75,16 @@ const getChats = async () => {
 };
 
 const addChat = async () => {
+  const initialChat = [
+    {
+      role: "system",
+      content:
+        "You can use these notes of the user when they are helpful: " + note,
+    },
+  ];
   return await client.execute({
     sql: "insert into chats (title, chat) values (?, ?) returning id",
-    args: ["New Chat", "[]"],
+    args: ["New Chat", JSON.stringify(initialChat)],
   });
 };
 
@@ -540,12 +547,15 @@ const ChatLayout = (
       ) : (
         <div></div>
       )}
-      {chat.toReversed().map((message) => (
-        <div class="flex flex-col">
-          <div class="text-blue-700">{message.role}</div>
-          <div>{addNewLines(message.content as string)}</div>
-        </div>
-      ))}
+      {chat
+        .filter((c) => c.role !== "system")
+        .toReversed()
+        .map((message) => (
+          <div class="flex flex-col">
+            <div class="text-blue-700">{message.role}</div>
+            <div>{addNewLines(message.content as string)}</div>
+          </div>
+        ))}
     </div>
   );
 };
