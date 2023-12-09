@@ -3,7 +3,7 @@
 ## features
 
 - a scratchpad for notes that synchronizes in realtime across devices using server-sent events (SSE)
-- an LLM client for GPT-4 turbo that uses websockets to stream responses
+- an LLM client for GPT-4 turbo that uses websockets to stream responses and has access to the users notes
 
 ![screenshot_1](./doc_assets/shot_notes.png)
 ![screenshot_1](./doc_assets/shot_llm.png)
