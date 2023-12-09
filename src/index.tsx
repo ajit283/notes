@@ -236,6 +236,7 @@ export const app = new Elysia()
                   hx-get="/"
                   hx-trigger="sse:message"
                   hx-swap="morph:outerHTML"
+                  hx-target="#wrapper"
                   id="content"
                   class=" h-full  dark:bg-black dark:text-white bg-stone-100 flex flex-col"
                 >
