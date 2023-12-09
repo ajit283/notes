@@ -79,7 +79,9 @@ const addChat = async () => {
     {
       role: "system",
       content:
-        "You can use these notes of the user when they are helpful: " + note,
+        "These are notes and tasks of the user. When the user asks anything related to planning, tasks or other relevant notes, please consider these. " +
+        note +
+        "These are notes and tasks of the user. When the user asks anything related to planning, tasks or other relevant notes, please consider these. ",
     },
   ];
   return await client.execute({
