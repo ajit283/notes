@@ -361,7 +361,15 @@ export const app = new Elysia()
                           <a href={`llm/chat/${chat.id}`}>
                             <div>{chat.title}</div>
                           </a>
-                          <div>{chat.id}</div>
+                          <div class="flex flex-row gap-2">
+                            <button
+                              hx-post={`/llm/delete/${chat.id}`}
+                              hx-target="body"
+                            >
+                              X
+                            </button>
+                            {/* <div>{chat.id}</div> */}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -373,6 +381,16 @@ export const app = new Elysia()
             .post("/add", async ({ set }) => {
               const id = await addChat();
               set.headers["HX-Redirect"] = "/llm" + "/chat/" + id.rows[0].id;
+
+              return "ok";
+            })
+            .post("/delete/:id", async ({ params, set }) => {
+              await client.execute({
+                sql: "delete from chats where id = ?",
+                args: [params.id],
+              });
+
+              set.headers["HX-Redirect"] = "/llm";
 
               return "ok";
             })
