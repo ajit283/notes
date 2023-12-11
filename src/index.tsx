@@ -456,7 +456,7 @@ export const app = new Elysia()
       const parsedMessage = message as { message: string; id: string };
 
       const stream = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4-1106-preview",
         stream: true,
         messages: [
           ...chat,
@@ -479,7 +479,7 @@ export const app = new Elysia()
           messages: [
             { role: "user", content: "Summarize this chat in 2 words:" + msg },
           ],
-          model: "gpt-4-1106-preview",
+          model: "gpt-3.5-turbo",
         });
 
         const title = chatCompletion.choices[0].message.content;
