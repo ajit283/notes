@@ -459,7 +459,12 @@ export const app = new Elysia()
 
       const parsedMessage = message as { message: string; id: string };
 
-      const stream = await openai.chat.completions.create({
+      const addToNote = async (textObject: { text: string }) => {
+        await changeNote(textObject.text + "\n\n" + note);
+        return "note successfully updated";
+      };
+
+      const stream = await openai.beta.chat.completions.runFunctions({
         model: "gpt-4-1106-preview",
         stream: true,
         messages: [
@@ -469,12 +474,23 @@ export const app = new Elysia()
             content: parsedMessage.message,
           },
         ],
+        functions: [
+          {
+            function: addToNote,
+            parameters: {
+              type: "object",
+              properties: { text: { type: "string" } },
+            },
+            parse: JSON.parse,
+            description: "Add something to the users's notes",
+          },
+        ],
       });
 
       let msg = "";
 
       for await (const message of stream) {
-        msg += message.choices[0].delta.content ?? "\n";
+        msg += message.choices[0].delta.content ?? "";
         ws.send(ChatLayout(msg, parsedMessage.message, chat));
       }
 
