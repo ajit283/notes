@@ -15,6 +15,7 @@ declare global {
   namespace JSX {
     interface HtmlTag {
       ["oninput"]?: string;
+      ["preload"]?: string;
     }
   }
 }
@@ -355,7 +356,10 @@ export const app = new Elysia()
                     <button hx-post="/llm/add" hx-target="body">
                       Add{" "}
                     </button>
-                    <div class="flex-grow flex flex-col  h-full  items-start w-full overflow-y-scroll">
+                    <div
+                      preload="mouseover"
+                      class="flex-grow flex flex-col  h-full  items-start w-full overflow-y-scroll"
+                    >
                       {chats.toReversed().map((chat) => (
                         <div class="flex flex-row justify-between w-full">
                           <a href={`llm/chat/${chat.id}`}>
@@ -583,7 +587,10 @@ const ChatLayout = (
 
 const Switcher = (current: "notes" | "llm") => {
   return (
-    <div class="pt-1 flex flex-row gap-3 dark:text-white text-black">
+    <div
+      preload="mouseover"
+      class="pt-1 flex flex-row gap-3 dark:text-white text-black"
+    >
       <a
         href="/"
         class={`${
@@ -621,12 +628,13 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
       <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
       <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
+      <script src="https://unpkg.com/htmx.org/dist/ext/preload.js"></script>
       <script src="/public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
       <link rel="icon" href="../public/icon.png" type="image/png"></link>
     </head>
-    <body id="body" hx-ext="morph">
+    <body id="body" hx-ext="morph, preload">
       {children}
     </body>
   </html>
