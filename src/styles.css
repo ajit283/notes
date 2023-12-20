@@ -6,3 +6,7 @@
   font-family: "BerkeleyMono";
   src: url("../public/bmr.woff2") format("woff2");
 }
+
+.CodeMirror {
+  @apply dark:bg-black bg-stone-100 dark:text-white text-black;
+}

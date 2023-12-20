@@ -267,9 +267,9 @@ export const app = new Elysia()
                   <textarea
                     spellcheck="false"
                     hx-post="/edit"
-                    hx-trigger="keyup changed"
+                    // hx-trigger="keyup"
                     hx-swap="none"
-                    name="text"
+                    // name="text"
                     id="textarea"
                     class="dark:bg-black bg-stone-100  w-full flex-grow border-none outline-none appearance-none focus:ring-0 focus:outline-none"
                   >
@@ -645,6 +645,12 @@ const Layout = ({ children }: PropsWithChildren) => (
       <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
       <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
       <script src="https://unpkg.com/htmx.org/dist/ext/preload.js"></script>
+
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"
+      />
+      <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
       <script src="/public/main.js"></script>
       <link rel="stylesheet" href="/public/stylesheet.css" />
       <link rel="apple-touch-icon" href="../public/icon.png"></link>
